@@ -1,0 +1,14 @@
+[flake8]
+
+exclude =(
+    .git,
+    _pycache_,
+    migrations,
+    .env
+)
+per-file-ignores = apps.py: F401, support/tests/*: F401, F811
+
+max-line-length = 120
+
+ignore = E712, E402
+

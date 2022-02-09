@@ -1,0 +1,47 @@
+version: '3.7'
+services:
+  db:
+    image: postgres:12-alpine
+    ports:
+      - 5432:5432
+    env_file:
+      .env
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data/
+
+  web:
+    build:
+      context: support
+      dockerfile: Dockerfile
+    command: bash -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - ./support/:/app
+    ports:
+      - 8000:8000
+    depends_on:
+      - db
+      - redis
+    env_file:
+      - .env
+
+
+  celery:
+      build:
+        context: support
+        dockerfile: Dockerfile
+      command: celery -A support worker -B --app=support.celeryconf:app --loglevel=info
+      volumes:
+        - ./support/:/app
+      env_file:
+        - .env
+      depends_on:
+        - redis
+
+
+  redis:
+    image: redis:6.2.1-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - .:/usr/src/volumes/redis
+
